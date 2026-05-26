@@ -1,4 +1,4 @@
-﻿# Phase 5: Agent能力评估看板（全功能版 + LLM-as-Judge）
+# Phase 5: Agent能力评估看板（全功能版 + LLM-as-Judge）
 
 ## 功能清单
 
@@ -14,7 +14,7 @@
 
 ```
 cd dashboard
-pip install flask pandas plotly requests
+pip install flask pandas plotly requests python-dotenv
 python app.py
 ```
 
@@ -92,7 +92,7 @@ LLM-as-Judge 评分引擎默认使用**模拟评分**（预设分数 + 微小随
 ## 依赖安装
 
 ```
-pip install flask pandas plotly requests
+pip install flask pandas plotly requests python-dotenv
 ```
 
 requests 用于 LLM API 调用；若未安装，评分引擎会自动降级为模拟评分。

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Tests for ranking algorithms and scoring engine.
 
 Target functions:
