@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调用链追踪 - {{ trace_id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 20px; background: #f8f9fa; }
+        .waterfall { position: relative; padding: 20px 0; }
+        .wf-row { display: flex; align-items: center; margin-bottom: 4px; padding: 4px 0; }
+        .wf-label { width: 250px; padding-right: 10px; text-align: right; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .wf-bar { height: 24px; border-radius: 4px; min-width: 4px; position: relative; }
+        .wf-bar.success { background: #0d6efd; }
+        .wf-bar.failure { background: #dc3545; }
+        .wf-bar.pending { background: #ffc107; }
+        .wf-bar:hover { opacity: 0.8; }
+        .wf-info { font-size: 11px; color: #6c757d; margin-left: 8px; white-space: nowrap; }
+        .nav-links { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="nav-links">
+        <a href="/" class="btn btn-primary btn-sm">&larr; 返回事件列表</a>
+    </div>
+
+    <h4>调用链追踪: <code>{{ trace_id }}</code></h4>
+    <p class="text-muted" id="event-count"></p>
+
+    <div id="waterfall">
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2">加载中...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const traceId = "{{ trace_id }}";
+
+async function loadTrace() {
+    try {
+        const resp = await fetch(`/api/traces/${traceId}`);
+        if (!resp.ok) throw new Error(await resp.text());
+        const data = await resp.json();
+        document.getElementById("event-count").textContent = `共 ${data.total_events} 个事件`;
+        renderWaterfall(data.waterfall);
+    } catch (e) {
+        document.getElementById("waterfall").innerHTML = `<div class="alert alert-danger">加载失败: ${e.message}</div>`;
+    }
+}
+
+function renderWaterfall(events) {
+    const container = document.getElementById("waterfall");
+    if (!events || events.length === 0) {
+        container.innerHTML = `<div class="alert alert-info">暂无数据</div>`;
+        return;
+    }
+
+    const maxDuration = Math.max(...events.map(e => e.duration_ms || 0), 1);
+    const totalWidth = 600;
+
+    let html = `<div class="waterfall"><div class="wf-header d-flex mb-2">
+        <div class="wf-label"><strong>Action</strong></div>
+        <div style="width: ${totalWidth}px; position: relative;">
+            <div style="position: absolute; left: 0; right: 0; top: 0; height: 1px; background: #dee2e6;"></div>
+        </div>
+        <div class="wf-info"><strong>���时</strong></div>
+    </div>`;
+
+    for (const e of events) {
+        const barWidth = e.duration_ms ? Math.max(4, (e.duration_ms / maxDuration) * totalWidth) : 4;
+        const ts = e.timestamp ? new Date(e.timestamp).toLocaleTimeString() : "-";
+        html += `<div class="wf-row">
+            <div class="wf-label" title="${e.action}">
+                <span class="badge bg-secondary" style="font-size:9px">${e.event_type}</span>
+                ${e.action.slice(0,35)}
+            </div>
+            <div style="width: ${totalWidth}px;">
+                <div class="wf-bar ${e.status}" style="width: ${barWidth}px;" title="${e.action} (${e.duration_ms?.toFixed(1)}ms)"></div>
+            </div>
+            <div class="wf-info">
+                ${e.duration_ms ? e.duration_ms.toFixed(1) + 'ms' : '-'}
+                <span class="badge ${e.status === 'success' ? 'bg-success' : e.status === 'failure' ? 'bg-danger' : 'bg-warning'}" style="font-size:9px">${e.status}</span>
+            </div>
+        </div>`;
+    }
+
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+loadTrace();
+</script>
+</body>
+</html>

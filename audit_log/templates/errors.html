@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审计日志 - 错误聚合</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 20px; background: #f8f9fa; }
+        .nav-links { margin-bottom: 20px; }
+        .stat-card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .error-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .error-row:last-child { border-bottom: none; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="nav-links">
+        <a href="/" class="btn btn-primary btn-sm">&larr; 返回事件列表</a>
+        <a href="/api/stats/errors" class="btn btn-outline-info btn-sm" target="_blank">API 原始数据</a>
+    </div>
+
+    <h4>错误聚合面板</h4>
+    <p class="text-muted">最近 7 天内的失败事件</p>
+
+    <div id="error-stats">
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2">加载中...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadErrors() {
+    try {
+        const [errorsResp, summaryResp] = await Promise.all([
+            fetch("/api/stats/errors"),
+            fetch("/api/stats/summary"),
+        ]);
+        const errors = await errorsResp.json();
+        const summary = await summaryResp.json();
+
+        let html = `<div class="row">`;
+
+        // Summary cards
+        html += `<div class="col-md-4"><div class="stat-card text-center">
+            <h2 class="text-primary">${summary.total_events_7d || 0}</h2>
+            <p class="text-muted mb-0">7天总事件数</p>
+        </div></div>`;
+        html += `<div class="col-md-4"><div class="stat-card text-center">
+            <h2 class="text-danger">${errors.errors ? errors.errors.reduce((a, b) => a + b.count, 0) : 0}</h2>
+            <p class="text-muted mb-0">失败事件</p>
+        </div></div>`;
+        html += `<div class="col-md-4"><div class="stat-card text-center">
+            <h2 class="text-success">${(summary.compression_ratio * 100).toFixed(1)}%</h2>
+            <p class="text-muted mb-0">压缩率</p>
+        </div></div>`;
+
+        html += `</div>`;
+
+        // Error list
+        html += `<div class="stat-card"><h5>按类型聚合</h5>`;
+        if (!errors.errors || errors.errors.length === 0) {
+            html += `<p class="text-muted">暂无失败事件</p>`;
+        } else {
+            for (const e of errors.errors) {
+                const lastSeen = e.last_seen ? new Date(e.last_seen).toLocaleString() : "-";
+                html += `<div class="error-row">
+                    <div>
+                        <span class="badge bg-secondary">${e.event_type}</span>
+                        <code>${e.agent_id ? e.agent_id.slice(0,16) : "unknown"}</code>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger">${e.count} 次</span>
+                        <small class="text-muted ms-2">最后: ${lastSeen}</small>
+                    </div>
+                </div>`;
+            }
+        }
+        html += `</div>`;
+
+        document.getElementById("error-stats").innerHTML = html;
+    } catch (e) {
+        document.getElementById("error-stats").innerHTML = `<div class="alert alert-danger">加载失败: ${e.message}</div>`;
+    }
+}
+
+loadErrors();
+</script>
+</body>
+</html>

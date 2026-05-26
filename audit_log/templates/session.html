@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会话详情 - {{ session_id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 20px; background: #f8f9fa; }
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: #dee2e6; }
+        .timeline-item { position: relative; margin-bottom: 16px; padding: 12px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .timeline-item::before { content: ""; position: absolute; left: -24px; top: 16px; width: 12px; height: 12px; border-radius: 50%; background: #0d6efd; border: 2px solid white; }
+        .timeline-item.failure::before { background: #dc3545; }
+        .timeline-item.pending::before { background: #ffc107; }
+        .nav-links { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="nav-links">
+        <a href="/" class="btn btn-primary btn-sm">&larr; 返回事件列表</a>
+    </div>
+
+    <h4>会话时间线: <code>{{ session_id }}</code></h4>
+    <p class="text-muted" id="event-count"></p>
+
+    <div id="timeline">
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2">加载中...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const sessionId = "{{ session_id }}";
+
+async function loadSession() {
+    try {
+        const resp = await fetch(`/api/sessions/${sessionId}/replay`);
+        if (!resp.ok) throw new Error(await resp.text());
+        const data = await resp.json();
+        document.getElementById("event-count").textContent = `共 ${data.total_events} 个事件`;
+        renderTimeline(data.events);
+    } catch (e) {
+        document.getElementById("timeline").innerHTML = `<div class="alert alert-danger">加载失败: ${e.message}</div>`;
+    }
+}
+
+function renderTimeline(events) {
+    const container = document.getElementById("timeline");
+    if (!events || events.length === 0) {
+        container.innerHTML = `<div class="alert alert-info">暂无数据</div>`;
+        return;
+    }
+
+    let html = `<div class="timeline">`;
+    for (const e of events) {
+        const statusClass = e.status === "failure" ? "failure" : e.status === "pending" ? "pending" : "";
+        const ts = e.timestamp ? new Date(e.timestamp).toLocaleString() : "-";
+        const duration = e.duration_ms ? `${e.duration_ms.toFixed(1)}ms` : "-";
+        html += `<div class="timeline-item ${statusClass}">
+            <div class="d-flex justify-content-between">
+                <strong><span class="badge bg-secondary">${e.event_type}</span> <code>${e.action}</code></strong>
+                <small class="text-muted">${ts}</small>
+            </div>
+            <div class="mt-1">
+                <span class="badge ${e.status === 'success' ? 'bg-success' : e.status === 'failure' ? 'bg-danger' : 'bg-warning'}">${e.status}</span>
+                <span class="text-muted ms-2">耗时: ${duration}</span>
+                <span class="text-muted ms-2">Agent: <code>${e.agent_id.slice(0,12)}</code></span>
+                ${e.trace_id ? `<span class="ms-2"><a href="/trace/${e.trace_id}">Trace: ${e.trace_id.slice(0,8)}...</a></span>` : ""}
+            </div>
+            ${e.input_summary ? `<div class="mt-1"><small class="text-muted">输入: ${e.input_summary.slice(0,120)}</small></div>` : ""}
+            ${e.output_summary ? `<div class="mt-1"><small class="text-muted">输出: ${e.output_summary.slice(0,120)}</small></div>` : ""}
+            ${e.error ? `<div class="mt-1"><small class="text-danger">错误: ${JSON.stringify(e.error)}</small></div>` : ""}
+        </div>`;
+    }
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+loadSession();
+</script>
+</body>
+</html>

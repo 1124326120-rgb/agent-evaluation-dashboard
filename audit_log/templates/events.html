@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审计日志 - 事件列表</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 20px; background: #f8f9fa; }
+        .filter-row { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .event-row { cursor: pointer; }
+        .event-row:hover { background: #e9ecef; }
+        .badge-status { min-width: 70px; }
+        .nav-links { margin-bottom: 20px; }
+        .nav-links a { margin-right: 15px; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="nav-links">
+        <a href="/" class="btn btn-primary btn-sm">事件列表</a>
+        <a href="/errors" class="btn btn-outline-danger btn-sm">错误聚合</a>
+        <a href="/api/stats/summary" class="btn btn-outline-info btn-sm" target="_blank">统计概览</a>
+        <span class="float-end">
+            <a href="/api/export/csv" class="btn btn-outline-success btn-sm">导出 CSV</a>
+            <a href="/api/export/json" class="btn btn-outline-success btn-sm">导出 JSON</a>
+        </span>
+    </div>
+
+    <div class="filter-row">
+        <h5>筛选条件</h5>
+        <div class="row g-2">
+            <div class="col-md-2">
+                <input type="datetime-local" id="filter_start" class="form-control form-control-sm" placeholder="开始时间">
+            </div>
+            <div class="col-md-2">
+                <input type="datetime-local" id="filter_end" class="form-control form-control-sm" placeholder="结束时间">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="filter_agent" class="form-control form-control-sm" placeholder="Agent ID">
+            </div>
+            <div class="col-md-2">
+                <select id="filter_type" class="form-select form-select-sm">
+                    <option value="">事件类型</option>
+                    <option value="execution">execution</option>
+                    <option value="decision">decision</option>
+                    <option value="tool_call">tool_call</option>
+                    <option value="memory_access">memory_access</option>
+                    <option value="model_invocation">model_invocation</option>
+                    <option value="error">error</option>
+                    <option value="security">security</option>
+                    <option value="system">system</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="filter_session" class="form-control form-control-sm" placeholder="Session ID">
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="filter_action" class="form-control form-control-sm" placeholder="Action">
+            </div>
+        </div>
+        <div class="row g-2 mt-2">
+            <div class="col-md-2">
+                <select id="filter_status" class="form-select form-select-sm">
+                    <option value="">状态</option>
+                    <option value="success">success</option>
+                    <option value="failure">failure</option>
+                    <option value="pending">pending</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="text" id="filter_trace" class="form-control form-control-sm" placeholder="Trace ID">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary btn-sm" onclick="loadEvents()">查询</button>
+                <button class="btn btn-secondary btn-sm" onclick="resetFilters()">重置</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="event-list">
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2">加载中...</p>
+        </div>
+    </div>
+
+    <nav>
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+    </nav>
+</div>
+
+<script>
+let currentOffset = 0;
+const PAGE_SIZE = 100;
+
+function getFilters() {
+    return {
+        start_time: document.getElementById("filter_start").value ? new Date(document.getElementById("filter_start").value).toISOString() : null,
+        end_time: document.getElementById("filter_end").value ? new Date(document.getElementById("filter_end").value).toISOString() : null,
+        agent_id: document.getElementById("filter_agent").value || null,
+        event_type: document.getElementById("filter_type").value || null,
+        session_id: document.getElementById("filter_session").value || null,
+        trace_id: document.getElementById("filter_trace").value || null,
+        status: document.getElementById("filter_status").value || null,
+        action: document.getElementById("filter_action").value || null,
+    };
+}
+
+function buildQueryString(filters, offset) {
+    const params = new URLSearchParams();
+    params.set("limit", PAGE_SIZE);
+    params.set("offset", offset);
+    for (const [k, v] of Object.entries(filters)) {
+        if (v) params.set(k, v);
+    }
+    return params.toString();
+}
+
+async function loadEvents(offset) {
+    if (offset !== undefined) currentOffset = offset;
+    const filters = getFilters();
+    const qs = buildQueryString(filters, currentOffset);
+
+    document.getElementById("event-list").innerHTML = `<div class="text-center py-5"><div class="spinner-border" role="status"></div><p class="mt-2">加载中...</p></div>`;
+
+    try {
+        const resp = await fetch("/api/events?" + qs);
+        if (!resp.ok) throw new Error(await resp.text());
+        const data = await resp.json();
+        renderEvents(data.events, data.total);
+    } catch (e) {
+        document.getElementById("event-list").innerHTML = `<div class="alert alert-danger">加载失败: ${e.message}</div>`;
+    }
+}
+
+function renderEvents(events, total) {
+    const container = document.getElementById("event-list");
+    if (!events || events.length === 0) {
+        container.innerHTML = `<div class="alert alert-info">暂无数据</div>`;
+        return;
+    }
+
+    let html = `<div class="card"><div class="card-body p-0"><table class="table table-striped table-hover mb-0"><thead><tr>
+        <th>时间</th><th>Agent</th><th>类型</th><th>Action</th><th>状态</th><th>耗时(ms)</th><th>Session</th><th>Trace</th>
+    </tr></thead><tbody>`;
+
+    for (const e of events) {
+        const statusClass = e.status === "success" ? "bg-success" : e.status === "failure" ? "bg-danger" : "bg-warning";
+        const ts = e.timestamp ? new Date(e.timestamp).toLocaleString() : "-";
+        const sessionLink = e.session_id ? `<a href="/session/${e.session_id}" title="查看会话">${e.session_id.slice(0,8)}...</a>` : "-";
+        const traceLink = e.trace_id ? `<a href="/trace/${e.trace_id}" title="查看追踪">${e.trace_id.slice(0,8)}...</a>` : "-";
+        html += `<tr class="event-row" onclick="showDetail('${e.event_id}')">
+            <td title="${e.timestamp}">${ts}</td>
+            <td><code>${e.agent_id.slice(0,12)}...</code></td>
+            <td><span class="badge bg-secondary">${e.event_type}</span></td>
+            <td><code>${e.action.slice(0,40)}</code></td>
+            <td><span class="badge ${statusClass} badge-status">${e.status}</span></td>
+            <td>${e.duration_ms ? e.duration_ms.toFixed(1) : "-"}</td>
+            <td>${sessionLink}</td>
+            <td>${traceLink}</td>
+        </tr>`;
+    }
+
+    html += `</tbody></table></div></div>`;
+    html += `<div class="mt-2 text-muted small">共 ${total} 条记录，显示 ${events.length} 条</div>`;
+
+    container.innerHTML = html;
+    renderPagination(total);
+}
+
+function renderPagination(total) {
+    const pages = Math.ceil(total / PAGE_SIZE);
+    const container = document.getElementById("pagination");
+    if (pages <= 1) { container.innerHTML = ""; return; }
+
+    let html = "";
+    html += `<li class="page-item ${currentOffset === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadEvents(0)">首页</a></li>`;
+    html += `<li class="page-item ${currentOffset === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadEvents(Math.max(0, ${currentOffset} - ${PAGE_SIZE}))">上一页</a></li>`;
+
+    const currentPage = Math.floor(currentOffset / PAGE_SIZE);
+    for (let i = Math.max(0, currentPage - 2); i < Math.min(pages, currentPage + 3); i++) {
+        html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="loadEvents(${i * PAGE_SIZE})">${i + 1}</a></li>`;
+    }
+
+    html += `<li class="page-item ${currentOffset + PAGE_SIZE >= total ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadEvents(${currentOffset + PAGE_SIZE})">下一页</a></li>`;
+    html += `<li class="page-item ${currentOffset + PAGE_SIZE >= total ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadEvents(${(pages-1) * PAGE_SIZE})">末页</a></li>`;
+
+    container.innerHTML = html;
+}
+
+async function showDetail(eventId) {
+    try {
+        const resp = await fetch(`/api/events/${eventId}`);
+        if (!resp.ok) return;
+        const e = await resp.json();
+        const detail = `事件详情\n\nID: ${e.event_id}\n时间: ${e.timestamp}\nAgent: ${e.agent_id} (${e.agent_type})\n类型: ${e.event_type}\nAction: ${e.action}\n状态: ${e.status}\n耗时: ${e.duration_ms}ms\nSession: ${e.session_id}\nTrace: ${e.trace_id}\n\n输入: ${e.input_summary || "-"}\n输出: ${e.output_summary || "-"}\n决策: ${e.decision || "-"}\n错误: ${e.error ? JSON.stringify(e.error) : "-"}`;
+        alert(detail);
+    } catch (e) {
+        // ignore
+    }
+}
+
+function resetFilters() {
+    document.querySelectorAll(".filter-row input, .filter-row select").forEach(el => el.value = "");
+    loadEvents(0);
+}
+
+loadEvents(0);
+</script>
+</body>
+</html>
