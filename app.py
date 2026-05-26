@@ -23,6 +23,7 @@ import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 from flask import Flask, jsonify, render_template, Response, request
+import base64
 
 app = Flask(__name__)
 
@@ -31,6 +32,29 @@ DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 random.seed(42)
+
+# ── HTTP Basic Auth ──────────────────────────────────────────
+# 通过环境变量控制鉴权开关
+AUTH_ENABLED = os.environ.get("AUTH_ENABLED", "").lower() in ("true", "1", "yes")
+AUTH_USERNAME = os.environ.get("AUTH_USERNAME", "admin")
+AUTH_PASSWORD = os.environ.get("AUTH_PASSWORD", "admin123")
+
+def require_auth(f):
+    """HTTP Basic Auth 装饰器。AUTH_ENABLED=false 时跳过。"""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not AUTH_ENABLED:
+            return f(*args, **kwargs)
+        auth = request.authorization
+        if not auth or auth.username != AUTH_USERNAME or auth.password != AUTH_PASSWORD:
+            return Response(
+                "需要认证 - 请设置环境变量 AUTH_ENABLED=true 并配置 AUTH_USERNAME/AUTH_PASSWORD",
+                401,
+                {"WWW-Authenticate": "Basic realm=\"Agent Dashboard\""}
+            )
+        return f(*args, **kwargs)
+    return decorated
 
 # ── LLM-as-Judge 维度定义 ─────────────────────────────────────
 
@@ -274,12 +298,12 @@ def generate_csv_report(ranking: list) -> str:
 
 # ── Flask Routes ───────────────────────────────────────────────
 
-@app.route("/")
+@app.route("/")@require_auth
 def index():
     return render_template("index.html")
 
 
-@app.route("/api/ranking")
+@app.route("/api/ranking")@require_auth
 def api_ranking():
     start_date = request.args.get("start")
     end_date = request.args.get("end")
@@ -292,7 +316,7 @@ def api_ranking():
     })
 
 
-@app.route("/api/radar")
+@app.route("/api/radar")@require_auth
 def api_radar():
     metrics = get_extended_metrics()
     agents_param = request.args.get("agents")
@@ -313,7 +337,7 @@ def api_radar():
     return jsonify(result)
 
 
-@app.route("/api/trends")
+@app.route("/api/trends")@require_auth
 def api_trends():
     days = request.args.get("days", "90")
     try:
@@ -351,7 +375,7 @@ def api_trends():
     return jsonify(trend_data)
 
 
-@app.route("/api/details")
+@app.route("/api/details")@require_auth
 def api_details():
     metrics = get_extended_metrics()
     return jsonify({
@@ -360,25 +384,25 @@ def api_details():
     })
 
 
-@app.route("/api/history")
+@app.route("/api/history")@require_auth
 def api_history():
     history = build_history_comparison()
     return jsonify(history)
 
 
-@app.route("/api/judge/refresh", methods=["POST"])
+@app.route("/api/judge/refresh", methods=["POST"])@require_auth
 def api_judge_refresh():
     data = get_all_llm_judge_data(force_refresh=True)
     return jsonify({"status": "ok", "count": len(data)})
 
 
-@app.route("/api/judge/latest")
+@app.route("/api/judge/latest")@require_auth
 def api_judge_latest():
     data = get_all_llm_judge_data()
     return jsonify({"judges": data, "count": len(data)})
 
 
-@app.route("/api/export/csv")
+@app.route("/api/export/csv")@require_auth
 def api_export_csv():
     metrics = get_extended_metrics()
     ranking = compute_ranking(metrics)
@@ -390,7 +414,7 @@ def api_export_csv():
     )
 
 
-@app.route("/api/export/json")
+@app.route("/api/export/json")@require_auth
 def api_export_json():
     metrics = get_extended_metrics()
     ranking = compute_ranking(metrics)
@@ -403,7 +427,7 @@ def api_export_json():
     return jsonify(report)
 
 
-@app.route("/api/agents")
+@app.route("/api/agents")@require_auth
 def api_agents():
     metrics = load_metrics_data().get("metrics", [])
     agents = [{"agent_id": m["agent_id"], "name": get_agent_name(m["agent_id"])} for m in metrics]
