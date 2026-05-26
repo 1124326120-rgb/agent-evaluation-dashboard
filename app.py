@@ -1,4 +1,4 @@
-﻿"""
+"""
 Phase 5: 全功能看板 + LLM-as-Judge
 
 在 Phase 4 MVP 基础上增加：
@@ -23,12 +23,14 @@ import plotly
 import plotly.express as px
 import plotly.graph_objects as go
 from flask import Flask, jsonify, render_template, Response, request
+from dotenv import load_dotenv
 
 import time
 import requests
 import re
 app = Flask(__name__)
 
+load_dotenv()
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -82,7 +84,7 @@ def llm_chat_completion(messages: list, model: str = None) -> dict:
     """Call LLM API (OpenAI-compatible) with timeout and automatic retry."""
     api_key = LLM_API_KEY or os.environ.get("OPENAI_API_KEY", "")
     model = model or LLM_MODEL
-    url = f"{LLM_BASE_URL.rstrip("/")}/chat/completions"
+    url = f'{LLM_BASE_URL.rstrip("/")}/chat/completions'
 
     if not api_key:
         print("WARNING: No API key configured. Set LLM_API_KEY or OPENAI_API_KEY.")
@@ -112,7 +114,7 @@ def llm_chat_completion(messages: list, model: str = None) -> dict:
             )
             resp.raise_for_status()
             result = resp.json()
-            print(f"  [LLM] Success, token usage: {result.get("usage", {})}")
+            print(f"  [LLM] Success, token usage: {result.get('usage', {})}")
             return result
         except requests.exceptions.Timeout as e:
             print(f"  [LLM] Timeout ({LLM_TIMEOUT}s): {e}")

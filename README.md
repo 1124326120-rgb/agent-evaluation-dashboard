@@ -1,4 +1,4 @@
-# Phase 5: Agent能力评估看板（全功能版 + LLM-as-Judge）
+﻿# Phase 5: Agent能力评估看板（全功能版 + LLM-as-Judge）
 
 ## 功能清单
 
@@ -50,14 +50,14 @@ LLM-as-Judge 评分引擎默认使用**模拟评分**（预设分数 + 微小随
 3. 启动时加载环境变量：
    ```
    # Linux / macOS
-   export  && python app.py
+   set -a && source .env && set +a && python app.py
    ```
 
    ```
    # Windows PowerShell
-   Get-Content .env | Where-Object {  -match "^[^#]" } | ForEach-Object {
-     ,  =  -split "=", 2
-     Set-Item "env:" 
+   Get-Content .env | Where-Object { $_ -match "^[^#]" } | ForEach-Object {
+     $key, $value = $_ -split "=", 2
+     Set-Item "env:$key" $value
    }
    python app.py
    ```
