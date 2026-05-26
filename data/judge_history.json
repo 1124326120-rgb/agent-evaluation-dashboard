@@ -1,0 +1,467 @@
+[
+  {
+    "generated_at": "2026-05-19T04:59:00.900657+00:00",
+    "results": [
+      {
+        "agent_id": "0e687182-0e7f-4a77-af6c-41a1dedcba64",
+        "agent_name": "Hermes",
+        "dimensions": {
+          "task_completion": 90,
+          "code_quality": 82,
+          "response_speed": 92,
+          "architecture": 84,
+          "analysis_depth": 77
+        },
+        "composite_score": 85.5,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 90分 (优秀)",
+          "代码质量: 82分 (良好)",
+          "响应速度: 92分 (优秀)",
+          "架构设计: 84分 (良好)",
+          "分析深度: 77分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899289+00:00"
+      },
+      {
+        "agent_id": "50443896-7a01-4f22-aa16-111dd8e052da",
+        "agent_name": "Codex",
+        "dimensions": {
+          "task_completion": 83,
+          "code_quality": 75,
+          "response_speed": 91,
+          "architecture": 75,
+          "analysis_depth": 77
+        },
+        "composite_score": 80.5,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 83分 (良好)",
+          "代码质量: 75分 (良好)",
+          "响应速度: 91分 (优秀)",
+          "架构设计: 75分 (良好)",
+          "分析深度: 77分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899307+00:00"
+      },
+      {
+        "agent_id": "93609087-b5a5-4c10-9478-a9216123d8eb",
+        "agent_name": "Claude Code",
+        "dimensions": {
+          "task_completion": 87,
+          "code_quality": 93,
+          "response_speed": 73,
+          "architecture": 90,
+          "analysis_depth": 87
+        },
+        "composite_score": 86.2,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 87分 (优秀)",
+          "代码质量: 93分 (优秀)",
+          "响应速度: 73分 (良好)",
+          "架构设计: 90分 (优秀)",
+          "分析深度: 87分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899317+00:00"
+      },
+      {
+        "agent_id": "pm-agent",
+        "agent_name": "产品经理",
+        "dimensions": {
+          "task_completion": 81,
+          "code_quality": 73,
+          "response_speed": 83,
+          "architecture": 74,
+          "analysis_depth": 90
+        },
+        "composite_score": 79.7,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 81分 (良好)",
+          "代码质量: 73分 (良好)",
+          "响应速度: 83分 (良好)",
+          "架构设计: 74分 (良好)",
+          "分析深度: 90分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899326+00:00"
+      },
+      {
+        "agent_id": "research-agent",
+        "agent_name": "市场调研专家",
+        "dimensions": {
+          "task_completion": 72,
+          "code_quality": 69,
+          "response_speed": 80,
+          "architecture": 67,
+          "analysis_depth": 87
+        },
+        "composite_score": 74.3,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 72分 (良好)",
+          "代码质量: 69分 (一般)",
+          "响应速度: 80分 (良好)",
+          "架构设计: 67分 (一般)",
+          "分析深度: 87分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899335+00:00"
+      }
+    ]
+  },
+  {
+    "generated_at": "2026-05-23T04:59:00.900665+00:00",
+    "results": [
+      {
+        "agent_id": "0e687182-0e7f-4a77-af6c-41a1dedcba64",
+        "agent_name": "Hermes",
+        "dimensions": {
+          "task_completion": 90,
+          "code_quality": 82,
+          "response_speed": 92,
+          "architecture": 84,
+          "analysis_depth": 77
+        },
+        "composite_score": 85.5,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 90分 (优秀)",
+          "代码质量: 82分 (良好)",
+          "响应速度: 92分 (优秀)",
+          "架构设计: 84分 (良好)",
+          "分析深度: 77分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899289+00:00"
+      },
+      {
+        "agent_id": "50443896-7a01-4f22-aa16-111dd8e052da",
+        "agent_name": "Codex",
+        "dimensions": {
+          "task_completion": 83,
+          "code_quality": 75,
+          "response_speed": 91,
+          "architecture": 75,
+          "analysis_depth": 77
+        },
+        "composite_score": 80.5,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 83分 (良好)",
+          "代码质量: 75分 (良好)",
+          "响应速度: 91分 (优秀)",
+          "架构设计: 75分 (良好)",
+          "分析深度: 77分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899307+00:00"
+      },
+      {
+        "agent_id": "93609087-b5a5-4c10-9478-a9216123d8eb",
+        "agent_name": "Claude Code",
+        "dimensions": {
+          "task_completion": 87,
+          "code_quality": 93,
+          "response_speed": 73,
+          "architecture": 90,
+          "analysis_depth": 87
+        },
+        "composite_score": 86.2,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 87分 (优秀)",
+          "代码质量: 93分 (优秀)",
+          "响应速度: 73分 (良好)",
+          "架构设计: 90分 (优秀)",
+          "分析深度: 87分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899317+00:00"
+      },
+      {
+        "agent_id": "pm-agent",
+        "agent_name": "产品经理",
+        "dimensions": {
+          "task_completion": 81,
+          "code_quality": 73,
+          "response_speed": 83,
+          "architecture": 74,
+          "analysis_depth": 90
+        },
+        "composite_score": 79.7,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 81分 (良好)",
+          "代码质量: 73分 (良好)",
+          "响应速度: 83分 (良好)",
+          "架构设计: 74分 (良好)",
+          "分析深度: 90分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899326+00:00"
+      },
+      {
+        "agent_id": "research-agent",
+        "agent_name": "市场调研专家",
+        "dimensions": {
+          "task_completion": 72,
+          "code_quality": 69,
+          "response_speed": 80,
+          "architecture": 67,
+          "analysis_depth": 87
+        },
+        "composite_score": 74.3,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 72分 (良好)",
+          "代码质量: 69分 (一般)",
+          "响应速度: 80分 (良好)",
+          "架构设计: 67分 (一般)",
+          "分析深度: 87分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899335+00:00"
+      }
+    ]
+  },
+  {
+    "generated_at": "2026-05-26T04:59:00.900668+00:00",
+    "results": [
+      {
+        "agent_id": "0e687182-0e7f-4a77-af6c-41a1dedcba64",
+        "agent_name": "Hermes",
+        "dimensions": {
+          "task_completion": 90,
+          "code_quality": 82,
+          "response_speed": 92,
+          "architecture": 84,
+          "analysis_depth": 77
+        },
+        "composite_score": 85.5,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 90分 (优秀)",
+          "代码质量: 82分 (良好)",
+          "响应速度: 92分 (优秀)",
+          "架构设计: 84分 (良好)",
+          "分析深度: 77分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899289+00:00"
+      },
+      {
+        "agent_id": "50443896-7a01-4f22-aa16-111dd8e052da",
+        "agent_name": "Codex",
+        "dimensions": {
+          "task_completion": 83,
+          "code_quality": 75,
+          "response_speed": 91,
+          "architecture": 75,
+          "analysis_depth": 77
+        },
+        "composite_score": 80.5,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 83分 (良好)",
+          "代码质量: 75分 (良好)",
+          "响应速度: 91分 (优秀)",
+          "架构设计: 75分 (良好)",
+          "分析深度: 77分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899307+00:00"
+      },
+      {
+        "agent_id": "93609087-b5a5-4c10-9478-a9216123d8eb",
+        "agent_name": "Claude Code",
+        "dimensions": {
+          "task_completion": 87,
+          "code_quality": 93,
+          "response_speed": 73,
+          "architecture": 90,
+          "analysis_depth": 87
+        },
+        "composite_score": 86.2,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 87分 (优秀)",
+          "代码质量: 93分 (优秀)",
+          "响应速度: 73分 (良好)",
+          "架构设计: 90分 (优秀)",
+          "分析深度: 87分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899317+00:00"
+      },
+      {
+        "agent_id": "pm-agent",
+        "agent_name": "产品经理",
+        "dimensions": {
+          "task_completion": 81,
+          "code_quality": 73,
+          "response_speed": 83,
+          "architecture": 74,
+          "analysis_depth": 90
+        },
+        "composite_score": 79.7,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 81分 (良好)",
+          "代码质量: 73分 (良好)",
+          "响应速度: 83分 (良好)",
+          "架构设计: 74分 (良好)",
+          "分析深度: 90分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899326+00:00"
+      },
+      {
+        "agent_id": "research-agent",
+        "agent_name": "市场调研专家",
+        "dimensions": {
+          "task_completion": 72,
+          "code_quality": 69,
+          "response_speed": 80,
+          "architecture": 67,
+          "analysis_depth": 87
+        },
+        "composite_score": 74.3,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 72分 (良好)",
+          "代码质量: 69分 (一般)",
+          "响应速度: 80分 (良好)",
+          "架构设计: 67分 (一般)",
+          "分析深度: 87分 (优秀)"
+        ],
+        "evaluated_at": "2026-05-26T04:59:00.899335+00:00"
+      }
+    ]
+  },
+  {
+    "generated_at": "2026-05-26T05:00:22.668129+00:00",
+    "results": [
+      {
+        "agent_id": "0e687182-0e7f-4a77-af6c-41a1dedcba64",
+        "agent_name": "Hermes",
+        "dimensions": {
+          "task_completion": 88,
+          "code_quality": 83,
+          "response_speed": 92,
+          "architecture": 81,
+          "analysis_depth": 77
+        },
+        "composite_score": 84.8,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 88分 (优秀)",
+          "代码质量: 83分 (良好)",
+          "响应速度: 92分 (优秀)",
+          "架构设计: 81分 (良好)",
+          "分析深度: 77分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T05:00:22.668085+00:00",
+        "tcr": 1.0,
+        "fpsr": 1.0,
+        "art_hours": 0.14,
+        "tcd_hours": 2.68,
+        "rr": 0.0
+      },
+      {
+        "agent_id": "50443896-7a01-4f22-aa16-111dd8e052da",
+        "agent_name": "Codex（副本）",
+        "dimensions": {
+          "task_completion": 85,
+          "code_quality": 81,
+          "response_speed": 87,
+          "architecture": 74,
+          "analysis_depth": 78
+        },
+        "composite_score": 81.7,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 85分 (优秀)",
+          "代码质量: 81分 (良好)",
+          "响应速度: 87分 (优秀)",
+          "架构设计: 74分 (良好)",
+          "分析深度: 78分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T05:00:22.668101+00:00",
+        "tcr": 0.33,
+        "fpsr": 1.0,
+        "art_hours": 1.89,
+        "tcd_hours": 0.11,
+        "rr": 0.0
+      },
+      {
+        "agent_id": "93609087-b5a5-4c10-9478-a9216123d8eb",
+        "agent_name": "Claude Code",
+        "dimensions": {
+          "task_completion": 92,
+          "code_quality": 90,
+          "response_speed": 77,
+          "architecture": 85,
+          "analysis_depth": 84
+        },
+        "composite_score": 86.2,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 92分 (优秀)",
+          "代码质量: 90分 (优秀)",
+          "响应速度: 77分 (良好)",
+          "架构设计: 85分 (优秀)",
+          "分析深度: 84分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T05:00:22.668111+00:00",
+        "tcr": 0.8,
+        "fpsr": 1.0,
+        "art_hours": 2.27,
+        "tcd_hours": 3.67,
+        "rr": 0.0
+      },
+      {
+        "agent_id": "pm-agent",
+        "agent_name": "产品经理",
+        "dimensions": {
+          "task_completion": 95,
+          "code_quality": 86,
+          "response_speed": 69,
+          "architecture": 75,
+          "analysis_depth": 70
+        },
+        "composite_score": 80.8,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 95分 (优秀)",
+          "代码质量: 86分 (优秀)",
+          "响应速度: 69分 (一般)",
+          "架构设计: 75分 (良好)",
+          "分析深度: 70分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T05:00:22.668119+00:00",
+        "tcr": 0.75,
+        "fpsr": 0.8,
+        "art_hours": 1.5,
+        "tcd_hours": 2.0,
+        "rr": 0.1
+      },
+      {
+        "agent_id": "research-agent",
+        "agent_name": "市场调研专家",
+        "dimensions": {
+          "task_completion": 71,
+          "code_quality": 86,
+          "response_speed": 61,
+          "architecture": 71,
+          "analysis_depth": 81
+        },
+        "composite_score": 74.2,
+        "judge_version": "llm-v1",
+        "comments": [
+          "任务完成: 71分 (良好)",
+          "代码质量: 86分 (优秀)",
+          "响应速度: 61分 (一般)",
+          "架构设计: 71分 (良好)",
+          "分析深度: 81分 (良好)"
+        ],
+        "evaluated_at": "2026-05-26T05:00:22.668127+00:00",
+        "tcr": 0.7,
+        "fpsr": 0.75,
+        "art_hours": 1.8,
+        "tcd_hours": 2.5,
+        "rr": 0.15
+      }
+    ]
+  }
+]

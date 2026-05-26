@@ -1,0 +1,90 @@
+{
+  "generated_at": "2026-05-26T04:59:00.899338+00:00",
+  "metrics": [
+    {
+      "agent_id": "0e687182-0e7f-4a77-af6c-41a1dedcba64",
+      "agent_name": "Hermes",
+      "tcr": 1.0,
+      "fpsr": 1.0,
+      "art_hours": 0.14,
+      "tcd_hours": 2.68,
+      "rr": 0.0,
+      "details": {
+        "tasks_total": 12,
+        "tasks_completed": 7,
+        "first_pass_success": 5,
+        "rework_count": 0,
+        "response_times_count": 13,
+        "completion_durations_count": 14
+      }
+    },
+    {
+      "agent_id": "50443896-7a01-4f22-aa16-111dd8e052da",
+      "agent_name": "Codex",
+      "tcr": 0.33,
+      "fpsr": 1.0,
+      "art_hours": 1.89,
+      "tcd_hours": 0.11,
+      "rr": 0.0,
+      "details": {
+        "tasks_total": 5,
+        "tasks_completed": 5,
+        "first_pass_success": 6,
+        "rework_count": 1,
+        "response_times_count": 11,
+        "completion_durations_count": 12
+      }
+    },
+    {
+      "agent_id": "93609087-b5a5-4c10-9478-a9216123d8eb",
+      "agent_name": "Claude Code",
+      "tcr": 0.8,
+      "fpsr": 1.0,
+      "art_hours": 2.27,
+      "tcd_hours": 3.67,
+      "rr": 0.0,
+      "details": {
+        "tasks_total": 18,
+        "tasks_completed": 7,
+        "first_pass_success": 10,
+        "rework_count": 2,
+        "response_times_count": 15,
+        "completion_durations_count": 3
+      }
+    },
+    {
+      "agent_id": "pm-agent",
+      "agent_name": "产品经理",
+      "tcr": 0.75,
+      "fpsr": 0.8,
+      "art_hours": 1.5,
+      "tcd_hours": 2.0,
+      "rr": 0.1,
+      "details": {
+        "tasks_total": 15,
+        "tasks_completed": 8,
+        "first_pass_success": 5,
+        "rework_count": 1,
+        "response_times_count": 15,
+        "completion_durations_count": 8
+      }
+    },
+    {
+      "agent_id": "research-agent",
+      "agent_name": "市场调研专家",
+      "tcr": 0.7,
+      "fpsr": 0.75,
+      "art_hours": 1.8,
+      "tcd_hours": 2.5,
+      "rr": 0.15,
+      "details": {
+        "tasks_total": 16,
+        "tasks_completed": 13,
+        "first_pass_success": 7,
+        "rework_count": 0,
+        "response_times_count": 14,
+        "completion_durations_count": 10
+      }
+    }
+  ]
+}
