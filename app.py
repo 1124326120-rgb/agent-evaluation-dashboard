@@ -24,6 +24,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 from flask import Flask, jsonify, render_template, Response, request
 
+import time
+import requests
+import re
 app = Flask(__name__)
 
 BASE_DIR = Path(__file__).parent
@@ -31,6 +34,14 @@ DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 random.seed(42)
+
+#  LLM config (environment variables)
+LLM_MODEL = os.environ.get("LLM_MODEL", "gpt-4o-mini")
+LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
+LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1")
+LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "30"))
+LLM_MAX_RETRIES = int(os.environ.get("LLM_MAX_RETRIES", "3"))
+LLM_RETRY_DELAY = int(os.environ.get("LLM_RETRY_DELAY", "2"))
 
 # ── LLM-as-Judge 维度定义 ─────────────────────────────────────
 
@@ -65,13 +76,130 @@ def get_agent_name(agent_id: str) -> str:
     return AGENT_NAMES.get(agent_id, agent_id[:8])
 
 
-# ── LLM-Judge 评分引擎 ───────────────────────────────────────
+
+
+def llm_chat_completion(messages: list, model: str = None) -> dict:
+    """Call LLM API (OpenAI-compatible) with timeout and automatic retry."""
+    api_key = LLM_API_KEY or os.environ.get("OPENAI_API_KEY", "")
+    model = model or LLM_MODEL
+    url = f"{LLM_BASE_URL.rstrip("/")}/chat/completions"
+
+    if not api_key:
+        print("WARNING: No API key configured. Set LLM_API_KEY or OPENAI_API_KEY.")
+        return None
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.3,
+        "max_tokens": 1024,
+    }
+
+    last_error = None
+    for attempt in range(1, LLM_MAX_RETRIES + 1):
+        try:
+            print(f"  [LLM] Calling {model} (attempt {attempt}/{LLM_MAX_RETRIES})")
+            resp = requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                timeout=LLM_TIMEOUT,
+            )
+            resp.raise_for_status()
+            result = resp.json()
+            print(f"  [LLM] Success, token usage: {result.get("usage", {})}")
+            return result
+        except requests.exceptions.Timeout as e:
+            print(f"  [LLM] Timeout ({LLM_TIMEOUT}s): {e}")
+            last_error = e
+        except requests.exceptions.HTTPError as e:
+            print(f"  [LLM] HTTP error: {e}")
+            if e.response is not None and 400 <= e.response.status_code < 500 and e.response.status_code != 429:
+                return None
+            last_error = e
+        except requests.exceptions.RequestException as e:
+            print(f"  [LLM] Request exception: {e}")
+            last_error = e
+
+        if attempt < LLM_MAX_RETRIES:
+            print(f"  [LLM] Retrying in {LLM_RETRY_DELAY}s...")
+            time.sleep(LLM_RETRY_DELAY)
+
+    print(f"  [LLM] Max retries ({LLM_MAX_RETRIES}) reached, giving up.")
+    return None
 
 def llm_judge_score(agent_id: str) -> dict:
     """
-    LLM-as-Judge 评分引擎。模拟多维语义评分。
-    生产环境可对接 OpenAI / Claude API。
+    LLM-as-Judge scoring engine.
+    Calls real LLM API when LLM_API_KEY is configured;
+    falls back to simulated scoring otherwise.
     """
+    api_key = LLM_API_KEY or os.environ.get("OPENAI_API_KEY", "")
+
+    # Get objective metrics
+    metrics_data = load_metrics_data().get("metrics", [])
+    agent_metrics = next((m for m in metrics_data if m["agent_id"] == agent_id), None)
+
+    tcr = agent_metrics.get("tcr", 0.5) if agent_metrics else 0.5
+    fpsr = agent_metrics.get("fpsr", 0.5) if agent_metrics else 0.5
+    art_hours = agent_metrics.get("art_hours", 24) if agent_metrics else 24
+    tcd_hours = agent_metrics.get("tcd_hours", 48) if agent_metrics else 48
+    rr = agent_metrics.get("rr", 0.5) if agent_metrics else 0.5
+
+    if api_key:
+        agent_name = get_agent_name(agent_id)
+        system_prompt = ("You are an AI Agent evaluation expert. "
+                       "Rate the agent on 5 dimensions (0-100):\n"
+                       "1. task_completion\n"
+                       "2. code_quality\n"
+                       "3. response_speed\n"
+                       "4. architecture\n"
+                       "5. analysis_depth\n\n"
+                       "Return JSON: {\"dimensions\": {dim: score, ...}, "
+                       "\"composite_score\": float, \"comments\": [str, ...]}")
+        user_prompt = f"Evaluate Agent:\nName: {agent_name}\nID: {agent_id}\n\n"
+        user_prompt += f"Metrics: TCR={tcr:.2%}, FPSR={fpsr:.2%}, ART={art_hours:.1f}h, TCD={tcd_hours:.1f}h, RR={rr:.3f}\n"
+        user_prompt += "Return JSON with 5 dimensions, composite_score, and comments."
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+        response = llm_chat_completion(messages)
+        if response is not None:
+            try:
+                content = response["choices"][0]["message"]["content"]
+                json_match = re.search(r"`(?:json)?\s*([\s\S]*?)\s*`", content)
+                if json_match:
+                    parsed = json.loads(json_match.group(1))
+                else:
+                    parsed = json.loads(content)
+                scores = parsed.get("dimensions", {})
+                composite = parsed.get("composite_score", 0)
+                llm_comments = parsed.get("comments", [])
+
+                for dim in LLM_JUDGE_DIMENSIONS:
+                    if dim not in scores:
+                        scores[dim] = 70
+
+                return {
+                    "agent_id": agent_id,
+                    "agent_name": get_agent_name(agent_id),
+                    "dimensions": scores,
+                    "composite_score": composite if composite else round(sum(scores[d] * 0.2 for d in LLM_JUDGE_DIMENSIONS), 1),
+                    "judge_version": "llm-v1-api",
+                    "comments": llm_comments,
+                    "evaluated_at": datetime.now(timezone.utc).isoformat(),
+                }
+            except Exception as e:
+                print(f"  [LLM] JSON parse failed: {e}, falling back to simulated")
+
+    # Fallback: simulated scoring
     base_scores = {
         "50443896-7a01-4f22-aa16-111dd8e052da": {
             "task_completion": 82, "code_quality": 78,
@@ -98,20 +226,22 @@ def llm_judge_score(agent_id: str) -> dict:
                "response_speed": 0.20, "architecture": 0.15, "analysis_depth": 0.15}
     composite = round(sum(scores[d] * weights[d] for d in LLM_JUDGE_DIMENSIONS), 1)
 
-    comments = []
+    llm_comments = []
     for dim, score in scores.items():
         level = "优秀" if score >= 85 else "良好" if score >= 70 else "一般" if score >= 55 else "需改进"
-        comments.append(f"{DIMENSION_LABELS.get(dim, dim)}: {score}分 ({level})")
+        llm_comments.append(f"{DIMENSION_LABELS.get(dim, dim)}: {score}分 ({level})")
 
     return {
         "agent_id": agent_id,
         "agent_name": get_agent_name(agent_id),
         "dimensions": scores,
         "composite_score": composite,
-        "judge_version": "llm-v1",
-        "comments": comments,
+        "judge_version": "llm-v1-simulated",
+        "comments": llm_comments,
         "evaluated_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
 
 
 # ── 数据加载 ───────────────────────────────────���─────────────
@@ -427,3 +557,4 @@ if __name__ == "__main__":
     print("  7. 🤖 LLM-as-Judge 评分引擎")
     print("=" * 60)
     app.run(debug=True, host="127.0.0.1", port=5000)
+
